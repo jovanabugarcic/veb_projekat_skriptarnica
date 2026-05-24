@@ -1,18 +1,29 @@
-import { useParams } from 'react-router-dom' 
+import { useState } from 'react' 
+import { useParams, useNavigate } from 'react-router-dom' 
 import { Link } from 'react-router-dom' 
-import { Row, Col, Image, ListGroup, Card, Button, Badge } from 'react-bootstrap' 
+import { Form, Row, Col, Image, ListGroup, Card, Button, Badge } from 'react-bootstrap' 
 import Rating from '../components/Rating' 
-import Loader from '../components/Loader'
+import Loader from '../components/Loader' 
+import Message from '../components/Message' 
 import { useGetProductDetailsQuery } from '../slices/productsApiSlice' 
-import Message from '../components/Message'
-
+import { addToCart } from '../slices/cartSlice' 
+import { useDispatch } from 'react-redux' 
 const ProductScreen = () => { 
  
     const { id: productId } = useParams(); 
  
+    const [qty, setQty] = useState(1); 
+ 
+    const dispatch = useDispatch(); 
+    const navigate = useNavigate(); 
+ 
     const { data: product, isLoading, error } = 
 useGetProductDetailsQuery(productId); 
  
+    const addToCartHandler = () => { 
+        dispatch(addToCart({ ...product, qty })); 
+        navigate('/cart'); 
+    } 
  
     return (<> 
         <Link className='btn btn-outline-secondary mb-4' to='/'> 
@@ -22,7 +33,9 @@ useGetProductDetailsQuery(productId);
         {isLoading ? ( 
             <Loader /> 
         ) : error ? ( 
-            <Message variant='danger'>{error?.data?.message || error.error}</Message>
+            <Message variant="danger"> 
+                {error?.data?.message || error.error} 
+            </Message> 
         ) : ( 
             <><Card className='border-0 shadow-sm p-4 mb-4'> 
                 <Row className='align-items-center'> 
@@ -73,12 +86,36 @@ align-items-center mb-4'>
                                         <Badge bg='danger'>Nije dostupno</Badge> 
                                     )} 
                                 </div> 
+                                {product.countInStock > 0 && ( 
+                                    <div className='d-flex justify-content
+between align-items-center mb-4'> 
+                                        <span>Količina:</span> 
+ 
+                                        <Form.Control 
+                                            as='select' 
+                                            value={qty} 
+                                            onChange={(e) => 
+setQty(Number(e.target.value))} 
+                                            style={{ width: '90px', textAlign: 
+'center' }} 
+                                        > 
+                                            {[...Array(product.countInStock).keys
+()].map((x) => ( 
+                                                <option key={x + 1} value={x + 
+1}> 
+                                                    {x + 1} 
+                                                </option> 
+                                            ))} 
+                                        </Form.Control> 
+                                    </div> 
+                                )} 
  
                                 <div className='d-grid'> 
                                     <Button 
                                         className='add-to-cart-btn' 
                                         type='button' 
                                         disabled={product.countInStock === 0} 
+                                        onClick={addToCartHandler} 
                                     > 
                                         Dodaj u korpu 
                                     </Button> 
