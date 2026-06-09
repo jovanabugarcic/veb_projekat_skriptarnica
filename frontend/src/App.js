@@ -12,7 +12,7 @@ import Footer from './components/Footer'
 const App = () => {
   return (
     <>
-    <Heather/>
+    <Header/>
     <main className="py-3">
     <Container>
       <Outlet/>
